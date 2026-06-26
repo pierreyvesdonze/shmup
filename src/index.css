@@ -1,0 +1,47 @@
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap");
+
+body {
+  margin: 0;
+  font-family: "Orbitron", sans-serif;
+}
+
+.landing {
+    width: 100vw;
+    height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    background: black;
+}
+
+.landing h1 {
+    color: white;
+    font-size: 70px;
+    margin-bottom: 50px;
+}
+
+.landing button {
+
+    font-family: "Orbitron", sans-serif;
+
+    font-size: 30px;
+
+    padding: 18px 60px;
+
+    cursor: pointer;
+
+    border: none;
+
+    border-radius: 8px;
+
+    background: #00e5ff;
+
+    color: black;
+}
+
+.landing button:hover {
+    transform: scale(1.05);
+}
