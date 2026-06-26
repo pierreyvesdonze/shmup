@@ -13,12 +13,12 @@ export default class MainScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image("player", "public/assets/images/player.png");
-    this.load.image("enemy", "public/assets/images/enemy.png");
-    this.load.image("tank", "public/assets/images/tank.png");
-    this.load.image("rush", "public/assets/images/rush.png");
-    this.load.image("midboss", "public/assets/images/midboss.png");
-    this.load.image("bossfinal", "public/assets/images/bossfinal.png");
+    this.load.image("player", "/assets/images/player.png");
+    this.load.image("enemy", "/assets/images/enemy.png");
+    this.load.image("tank", "/assets/images/tank.png");
+    this.load.image("rush", "/assets/images/rush.png");
+    this.load.image("midboss", "/assets/images/midboss.png");
+    this.load.image("bossfinal", "/assets/images/bossfinal.png");
     //this.load.image("bullet", "src/assets/images/bullet.png");
   }
 
