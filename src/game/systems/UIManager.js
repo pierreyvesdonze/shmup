@@ -66,6 +66,43 @@ export default class UIManager {
     this.bossBarBg.setVisible(false);
     this.bossBar.setVisible(false);
     this.bossLabel.setVisible(false);
+
+    // MUTE BUTTON
+    this.muted = false;
+    this.muteBtn = scene.add
+      .text(788, 40, "🔊", {
+        fontSize: "18px",
+        color: "#ffffff99",
+        fontFamily: "monospace",
+      })
+      .setOrigin(1, 0)
+      .setInteractive({ useHandCursor: true });
+
+    this.muteBtn.on("pointerdown", () => {
+      this.muted = !this.muted;
+      this.muteBtn.setText(this.muted ? "🔇" : "🔊");
+      scene.sound.setMute(this.muted);
+    });
+
+    this.muteBtn.on("pointerover", () => this.muteBtn.setColor("#ffffff"));
+    this.muteBtn.on("pointerout", () => this.muteBtn.setColor("#ffffff99"));
+
+    // VIGNETTE
+    this.vignette = scene.add
+      .rectangle(400, 300, 800, 600, 0xff0000, 0)
+      .setDepth(10);
+
+    // COMBO
+    this.comboText = scene.add
+      .text(400, 150, "", {
+        fontSize: "32px",
+        fontFamily: "monospace",
+        color: "#ffff00",
+        stroke: "#000000",
+        strokeThickness: 4,
+      })
+      .setOrigin(0.5)
+      .setAlpha(0);
   }
 
   update({ hp, powerLevel, score, heat, maxHeat, kills, target, level }) {
@@ -76,8 +113,7 @@ export default class UIManager {
 
     // POWER
     for (let i = 0; i < this.powerBars.length; i++) {
-      this.powerBars[i].fillColor =
-        i < powerLevel ? 0x00ffcc : 0xffffff15;
+      this.powerBars[i].fillColor = i < powerLevel ? 0x00ffcc : 0xffffff15;
     }
 
     // SCORE
@@ -153,6 +189,48 @@ export default class UIManager {
       duration: 500,
       ease: "Power1",
       onComplete: () => text.destroy(),
+    });
+  }
+
+  updateVignette(hp) {
+    const danger = hp <= 2;
+
+    if (danger && !this._vignettePulsing) {
+      this._vignettePulsing = true;
+      const intensity = hp === 1 ? 0.25 : 0.12;
+      this.scene.tweens.killTweensOf(this.vignette);
+      this.scene.tweens.add({
+        targets: this.vignette,
+        fillAlpha: intensity,
+        duration: 400,
+        yoyo: true,
+        repeat: -1,
+        ease: "Sine.easeInOut",
+      });
+    }
+
+    if (!danger && this._vignettePulsing) {
+      this._vignettePulsing = false;
+      this.scene.tweens.killTweensOf(this.vignette);
+      this.vignette.setAlpha(0);
+    }
+  }
+
+  showCombo(count) {
+    if (count < 2) return;
+
+    this.scene.tweens.killTweensOf(this.comboText);
+    this.comboText.setText(`x${count} COMBO`);
+    this.comboText.setAlpha(1).setScale(1.4);
+
+    this.scene.tweens.add({
+      targets: this.comboText,
+      alpha: 0,
+      scaleX: 1,
+      scaleY: 1,
+      delay: 600,
+      duration: 400,
+      ease: "Power2",
     });
   }
 }

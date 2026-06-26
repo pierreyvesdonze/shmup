@@ -233,6 +233,8 @@ export default class BossFinal {
   damage(amount = 1) {
     this.hp -= amount;
 
+    this.scene.effects?.flashHit(this.sprite);
+
     // LOOT PENDANT LE COMBAT
     if (Math.random() < 0.12) {
       this.dropLoot();
@@ -302,6 +304,6 @@ export default class BossFinal {
     this.scene.score += 5000;
     this.scene.scoreText?.setText(`Score : ${this.scene.score}`);
 
-    this.scene.spawnScorePopup(this.x, this.y, 5000);
+    this.scene.ui?.spawnScorePopup(this.x, this.y, 5000);
   }
 }

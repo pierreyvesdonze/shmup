@@ -265,47 +265,52 @@ export default class Enemy {
     }
   }
 
-  // =====================
-  // DAMAGE + DROP
-  // =====================
   damage(amount = 1) {
     if (!this.alive) return false;
 
     this.hp -= amount;
 
     if (this.hp <= 0) {
-      this.alive = false;
-      this._dead = true;
+      const x = this.sprite.x;
+      const y = this.sprite.y;
 
-      this.sprite.destroy();
+      // Couleur explosion selon type
+      const color =
+        this.type === "tank"
+          ? 0x00ffcc
+          : this.type === "rush"
+            ? 0xff6600
+            : this.type === "zigzag"
+              ? 0xcc00ff
+              : 0xff4400;
 
-      // =====================
-      // SCORE BY TYPE
-      // =====================
+      this.scene.effects?.explode(x, y, color);
+
+      // Score selon type
       let score = 10;
-
       if (this.type === "rush") score = 20;
       if (this.type === "tank") score = 30;
-
       this.scene.score = (this.scene.score || 0) + score;
-      this.scene.scoreText?.setText(`Score : ${this.scene.score}`);
+      this.scene.ui?.spawnScorePopup(x, y, score);
 
-      // 👇 POP UI
-      this.scene.ui.spawnScorePopup(this.sprite.x, this.sprite.y, score);
+      // Kill count
+      this.scene.levelSystem?.addKill();
+      this.scene.registerKill?.();
 
-      // =====================
-      // DROP
-      // =====================
+      // Drop
       const drop = this.scene.getDrop?.();
-
       if (drop) {
-        this.scene.powerUps.push(
-          new PowerUp(this.scene, this.sprite.x, this.sprite.y, drop),
-        );
+        this.scene.powerUps.push(new PowerUp(this.scene, x, y, drop));
       }
+
+      // Destroy en dernier
+      this.destroy();
 
       return true;
     }
+
+    // Flash si ennemi survit
+    this.scene.effects?.flashHit(this.sprite);
 
     return false;
   }

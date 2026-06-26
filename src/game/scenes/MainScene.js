@@ -1,6 +1,7 @@
 import BackgroundManager from "../systems/BackgroundManager.js";
 import UIManager from "../systems/UIManager.js";
 import InputHandler from "../systems/InputHandler.js";
+import EffectsManager from "../systems/EffectsManager.js";
 import Phaser from "phaser";
 import Player from "../entities/Player.js";
 import EnemySpawner from "../systems/EnemySpawner.js";
@@ -24,6 +25,8 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("midboss", "assets/images/midboss.png");
     this.load.image("bossfinal", "assets/images/bossfinal.png");
     //this.load.image("bullet", "assets/images/bullet.png");
+
+    this.load.audio("music", "assets/audio/music.mp3");
   }
 
   create() {
@@ -106,18 +109,38 @@ export default class MainScene extends Phaser.Scene {
     // =====================
     this.score = 0;
 
+    this.comboCount = 0;
+    this.comboTimer = null;
+
     // =====================
     // UI
     // =====================
     this.ui = new UIManager(this);
 
-    // Enlève le curseur de la souris pour un jeu plus immersif
-    this.input.setDefaultCursor("none");
+    // =====================
+    // EFFECTS
+    // =====================
+    this.effects = new EffectsManager(this);
+
+    // =====================
+    // MUSIC
+    // =====================
+    this.music = this.sound.add("music", { loop: true, volume: 0.5 });
+    this.music.play();
+
+    // =====================
+    // CURSOR
+    // =====================
+    //this.input.setDefaultCursor("none");
+
+    //  =====================
+    // FADE IN LANDING TO GAME
+    // =====================
+    this.cameras.main.fadeIn(800, 0, 0, 0);
 
     // =====================
     // DEBUG KEYS
     // =====================
-    this.input.setDefaultCursor("none");
     this.inputHandler = new InputHandler(this);
     this.cursors = this.inputHandler.cursors;
     this.spaceKey = this.inputHandler.spaceKey;
@@ -231,6 +254,8 @@ export default class MainScene extends Phaser.Scene {
       level: p.level,
     });
 
+    this.ui.updateVignette(this.playerHP);
+
     if (this.inMidBoss && this.midBoss) {
       this.ui.updateBossBar(this.midBoss.hp, this.midBoss.maxHp);
     }
@@ -327,7 +352,7 @@ export default class MainScene extends Phaser.Scene {
       const dx = bullet.sprite.x - this.midBoss.sprite.x;
       const dy = bullet.sprite.y - this.midBoss.sprite.y;
 
-      if (Math.sqrt(dx * dx + dy * dy) < 35) {
+      if (Math.sqrt(dx * dx + dy * dy) < 40) {
         this.midBoss?.damage?.(1);
         bullet.kill?.();
         break;
@@ -344,7 +369,7 @@ export default class MainScene extends Phaser.Scene {
       const dx = bullet.sprite.x - this.bossFinal.x;
       const dy = bullet.sprite.y - this.bossFinal.y;
 
-      if (Math.sqrt(dx * dx + dy * dy) < 40) {
+      if (Math.sqrt(dx * dx + dy * dy) < 60) {
         this.bossFinal.damage(1);
         bullet.kill?.();
         break;
@@ -444,6 +469,15 @@ export default class MainScene extends Phaser.Scene {
       },
     });
 
+    // SLOW MOTION
+    this.time.timeScale = 0.35;
+    this.tweens.timeScale = 0.35;
+
+    this.time.delayedCall(100, () => {
+      this.time.timeScale = 1;
+      this.tweens.timeScale = 1;
+    });
+
     if (this.playerHP <= 0) {
       this.time.delayedCall(200, () => {
         this.gameOver();
@@ -451,11 +485,27 @@ export default class MainScene extends Phaser.Scene {
     }
   }
 
+  registerKill() {
+    this.comboCount++;
+
+    if (this.comboTimer) this.comboTimer.remove();
+
+    this.comboTimer = this.time.delayedCall(1200, () => {
+      this.comboCount = 0;
+    });
+
+    this.ui.showCombo(this.comboCount);
+
+    const bonus = this.comboCount >= 2 ? this.comboCount * 5 : 0;
+    this.score += bonus;
+  }
+
   // =====================
   // MID BOSS
   // =====================
   startMidBoss() {
     this.ui.showLevelBanner("— MID BOSS —");
+    this.cameras.main.shake(600, 0.03);
 
     this.midBossActive = true;
     this.inMidBoss = true;
@@ -499,6 +549,7 @@ export default class MainScene extends Phaser.Scene {
   // =====================
   startBossFinal() {
     this.ui.showLevelBanner("— FINAL BOSS —");
+    this.cameras.main.shake(900, 0.05);
 
     this.inBossFinal = true;
 
@@ -519,43 +570,11 @@ export default class MainScene extends Phaser.Scene {
 
   gameOver() {
     this.player.sprite.visible = false;
-
-    this.add.rectangle(400, 300, 800, 600, 0x000000, 0.7);
-
-    this.add.text(240, 250, "GAME OVER", {
-      fontSize: "48px",
-      fontFamily: "orbitron",
-      color: "#ffffff",
-    });
-
-    this.add.text(240, 320, "F5 TO RESTART", {
-      fontSize: "48px",
-      fontFamily: "orbitron",
-      color: "#ffbb00",
-    });
-
-    this.scene.pause();
+    this.effects.gameOverScreen(this.score, () => this.scene.restart());
   }
 
   youWin() {
     this.player.sprite.visible = false;
-
-    this.add.rectangle(400, 300, 800, 600, 0x000000, 0.7);
-
-    this.add
-      .text(400, 250, "YOU WIN", {
-        fontSize: "64px",
-        color: "#00ffcc",
-      })
-      .setOrigin(0.5);
-
-    this.add
-      .text(400, 330, `Score : ${this.score}`, {
-        fontSize: "32px",
-        color: "#ffffff",
-      })
-      .setOrigin(0.5);
-
-    this.scene.pause();
+    this.effects.youWinScreen(this.score, () => this.scene.restart());
   }
 }

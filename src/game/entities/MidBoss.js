@@ -292,6 +292,7 @@ export default class MidBoss {
     if (!this.active) return;
 
     this.hp -= amount;
+    this.scene.effects?.flashHit(this.sprite);
 
     this.tryDrop();
 
@@ -355,6 +356,6 @@ export default class MidBoss {
     this.scene.score += 1500;
     this.scene.scoreText?.setText(`Score : ${this.scene.score}`);
 
-    this.scene.spawnScorePopup(this.x, this.y, 1500);
+    this.scene.ui?.spawnScorePopup(this.x, this.y, 1500);
   }
 }
