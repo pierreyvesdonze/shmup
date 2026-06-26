@@ -1,6 +1,10 @@
+import BackgroundManager from "../systems/BackgroundManager.js";
+import UIManager from "../systems/UIManager.js";
+import InputHandler from "../systems/InputHandler.js";
 import Phaser from "phaser";
 import Player from "../entities/Player.js";
 import EnemySpawner from "../systems/EnemySpawner.js";
+import ShootingSystem from "../systems/ShootingSystem.js";
 import BulletPool from "../systems/BulletPool.js";
 import LevelSystem from "../systems/LevelSystem.js";
 import CollisionSystem from "../systems/CollisionSystem.js";
@@ -26,35 +30,13 @@ export default class MainScene extends Phaser.Scene {
     // =====================
     // BACKGROUND ÉTOILES
     // =====================
-    this.starLayers = [];
-
-    const layerConfigs = [
-      { count: 60, speed: 0.3, size: 1, alpha: 0.3 },
-      { count: 40, speed: 0.7, size: 1.5, alpha: 0.6 },
-      { count: 20, speed: 1.4, size: 2, alpha: 0.9 },
-    ];
-
-    for (const cfg of layerConfigs) {
-      const stars = [];
-      for (let i = 0; i < cfg.count; i++) {
-        const x = Math.random() * 800;
-        const y = Math.random() * 600;
-        const star = this.add.rectangle(x, y, cfg.size, cfg.size, 0xffffff);
-        star.setAlpha(cfg.alpha);
-        star._speed = cfg.speed;
-        stars.push(star);
-      }
-      this.starLayers.push(stars);
-    }
+    this.background = new BackgroundManager(this);
 
     this.cursors = this.input.keyboard.createCursorKeys();
 
     this.spaceKey = this.input.keyboard.addKey(
       Phaser.Input.Keyboard.KeyCodes.SPACE,
     );
-
-    // Enlève le curseur de la souris pour un jeu plus immersif
-    this.input.setDefaultCursor("none");
 
     // =====================
     // SYSTEMS
@@ -110,8 +92,7 @@ export default class MainScene extends Phaser.Scene {
     // =====================
     // SHOOT SYSTEM
     // =====================
-    this.shootTimer = 0;
-    this.shootCooldown = 150;
+    this.shooting = new ShootingSystem(this);
 
     // =====================
     // SUPER SHOOT (CONTROL)
@@ -119,9 +100,6 @@ export default class MainScene extends Phaser.Scene {
     this.superKey = this.input.keyboard.addKey(
       Phaser.Input.Keyboard.KeyCodes.A,
     );
-
-    this.superTimer = 0;
-    this.superCooldown = 800;
 
     // =====================
     // SCORE
@@ -131,91 +109,29 @@ export default class MainScene extends Phaser.Scene {
     // =====================
     // UI
     // =====================
-    this.hpHearts = [];
-    for (let i = 0; i < 5; i++) {
-      const heart = this.add.text(14 + i * 22, 35, "♥", {
-        fontSize: "20px",
-        color: "#ff4444",
-      });
-      this.hpHearts.push(heart);
-    }
+    this.ui = new UIManager(this);
 
-    this.powerBars = [];
-    for (let i = 0; i < 3; i++) {
-      const bar = this.add
-        .rectangle(14 + i * 16, 58, 12, 18, 0xffffff15)
-        .setOrigin(0, 0);
-      this.powerBars.push(bar);
-    }
-
-    this.levelText = this.add.text(14, 12, "LEVEL 1", {
-      fontSize: "13px",
-      color: "#ffffff55",
-      fontFamily: "monospace",
-    });
-
-    this.killsBarBg = this.add
-      .rectangle(14, 30, 110, 7, 0xffffff15)
-      .setOrigin(0, 0.5);
-    this.killsBar = this.add
-      .rectangle(14, 30, 110, 7, 0x9900ff)
-      .setOrigin(0, 0.5);
-
-    this.scoreText = this.add
-      .text(658, 12, "000000", {
-        fontSize: "16px",
-        color: "#ffffff",
-        fontFamily: "monospace",
-      })
-      .setOrigin(1, 0);
-
-    this.heatBarBg = this.add.rectangle(700, 20, 100, 10, 0x333333);
-    this.heatBar = this.add.rectangle(700, 20, 100, 10, 0x00ffff);
+    // Enlève le curseur de la souris pour un jeu plus immersif
+    this.input.setDefaultCursor("none");
 
     // =====================
     // DEBUG KEYS
     // =====================
-    this.debugKeys = this.input.keyboard.addKeys({
-      level1: Phaser.Input.Keyboard.KeyCodes.ONE,
-      level2: Phaser.Input.Keyboard.KeyCodes.TWO,
-      level3: Phaser.Input.Keyboard.KeyCodes.THREE,
-      level4: Phaser.Input.Keyboard.KeyCodes.FOUR,
-      level5: Phaser.Input.Keyboard.KeyCodes.FIVE,
-      level6: Phaser.Input.Keyboard.KeyCodes.SIX,
-      level7: Phaser.Input.Keyboard.KeyCodes.SEVEN,
-      level8: Phaser.Input.Keyboard.KeyCodes.EIGHT,
-      level9: Phaser.Input.Keyboard.KeyCodes.NINE,
-      level10: Phaser.Input.Keyboard.KeyCodes.ZERO,
-    });
-
-    this.midBossKey = this.input.keyboard.addKey(
-      Phaser.Input.Keyboard.KeyCodes.M,
-    );
-
-    this.bossFinalKey = this.input.keyboard.addKey(
-      Phaser.Input.Keyboard.KeyCodes.B,
-    );
-
-    this.godKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.G);
+    this.input.setDefaultCursor("none");
+    this.inputHandler = new InputHandler(this);
+    this.cursors = this.inputHandler.cursors;
+    this.spaceKey = this.inputHandler.spaceKey;
+    this.superKey = this.inputHandler.superKey;
 
     this.debugMode = true;
   }
 
   update(time, delta) {
     // BACKGROUND ÉTOILES
-    for (const layer of this.starLayers) {
-      for (const star of layer) {
-        star.y += star._speed;
-        if (star.y > 610) {
-          star.y = -5;
-          star.x = Math.random() * 800;
-        }
-      }
-    }
+    this.background.update();
 
+    // PLAYER
     this.player.update(this.cursors);
-
-    this.handleDebugCheats();
 
     // =====================
     // NORMAL GAMEPLAY
@@ -253,54 +169,7 @@ export default class MainScene extends Phaser.Scene {
     // =====================
     // SHOOT PLAYER
     // =====================
-    this.shootTimer += delta;
-
-    const x = this.player.sprite.x;
-    const y = this.player.sprite.y - 25;
-
-    if (
-      this.spaceKey.isDown &&
-      this.shootTimer >= this.shootCooldown &&
-      !this.overheated
-    ) {
-      this.shootTimer = 0;
-      this.weaponHeat += 6;
-
-      const level = this.playerPowerLevel;
-
-      if (level === 1) this.bullets.fire(x, y);
-
-      if (level === 2) {
-        this.bullets.fire(x - 10, y);
-        this.bullets.fire(x + 10, y);
-      }
-
-      if (level === 3) {
-        this.bullets.fire(x, y);
-        this.bullets.fire(x - 15, y);
-        this.bullets.fire(x + 15, y);
-      }
-
-      if (level === 4) {
-        this.bullets.fire(x, y);
-        this.bullets.fire(x - 20, y);
-        this.bullets.fire(x + 20, y);
-        this.shootCooldown = 100;
-      }
-
-      if (this.weaponHeat >= this.maxHeat) {
-        this.overheated = true;
-        this.heatCooldownTimer = 2000;
-      }
-    }
-
-    // SUPER SHOOT
-    this.superTimer += delta;
-
-    if (this.superKey.isDown && this.superTimer >= this.superCooldown) {
-      this.superTimer = 0;
-      this.superShoot();
-    }
+    this.shooting.update(delta, this.spaceKey, this.superKey);
 
     // POWERUPS
     this.checkPowerUps();
@@ -351,103 +220,25 @@ export default class MainScene extends Phaser.Scene {
 
     // UI
     const p = this.levelSystem.getProgress();
-    this.levelText.setText(`LEVEL ${p.level}  —  ${p.kills} / ${p.target}`);
-    const ratio = Math.min(1, p.kills / p.target);
-    this.killsBar.width = 110 * ratio;
+    this.ui.update({
+      hp: this.playerHP,
+      powerLevel: this.playerPowerLevel,
+      score: this.score,
+      heat: this.weaponHeat,
+      maxHeat: this.maxHeat,
+      kills: p.kills,
+      target: p.target,
+      level: p.level,
+    });
 
-    for (let i = 0; i < this.hpHearts.length; i++) {
-      this.hpHearts[i].setColor(i < this.playerHP ? "#ff4444" : "#333333");
+    if (this.inMidBoss && this.midBoss) {
+      this.ui.updateBossBar(this.midBoss.hp, this.midBoss.maxHp);
     }
-
-    for (let i = 0; i < this.powerBars.length; i++) {
-      this.powerBars[i].fillColor =
-        i < this.playerPowerLevel ? 0x00ffcc : 0xffffff15;
-    }
-
-    const heatPercent = this.weaponHeat / this.maxHeat;
-
-    this.heatBar.width = 100 * (1 - heatPercent);
-
-    if (heatPercent < 0.5) {
-      this.heatBar.fillColor = 0x00ffff;
-    } else if (heatPercent < 0.8) {
-      this.heatBar.fillColor = 0xffaa00;
-    } else {
-      this.heatBar.fillColor = 0xff0000;
-    }
-
-    // SCORE
-    this.scoreText.setText(String(this.score).padStart(6, "0"));
 
     // CHEAT / BOSSES TRIGGER
-    if (this.debugMode && this.godKey.isDown) {
-      console.log("GOD MODE ACTIVATED");
-
-      this.invincible = true;
-    }
-
-    if (this.debugMode && Phaser.Input.Keyboard.JustDown(this.midBossKey)) {
-      if (!this.midBoss) this.startMidBoss();
-    }
-
-    if (this.debugMode && Phaser.Input.Keyboard.JustDown(this.bossFinalKey)) {
-      if (!this.bossFinal) this.startBossFinal();
-    }
-  }
-
-  // =====================
-  // LEVEL BANNER
-  // =====================
-  showLevelBanner(text) {
-    const banner = this.add
-      .text(400, 280, text, {
-        fontSize: "48px",
-        color: "#ffffff",
-        fontFamily: "monospace",
-        stroke: "#000000",
-        strokeThickness: 4,
-      })
-      .setOrigin(0.5)
-      .setAlpha(0);
-
-    this.tweens.add({
-      targets: banner,
-      alpha: { from: 0, to: 1 },
-      duration: 300,
-      yoyo: true,
-      hold: 800,
-      ease: "Power2",
-      onComplete: () => banner.destroy(),
-    });
-  }
-
-  // =====================
-  // SUPER SHOOT
-  // =====================
-  superShoot() {
-    const x = this.player.sprite.x;
-    const y = this.player.sprite.y - 25;
-
-    const spread = 15;
-
-    this.bullets.fire(x, y);
-    this.bullets.fire(x - spread, y);
-    this.bullets.fire(x + spread, y);
-  }
-
-  handleDebugCheats() {
-    if (!this.debugMode) return;
-
-    if (this.debugKeys.level1.isDown) this.resetForLevel(1);
-    if (this.debugKeys.level2.isDown) this.resetForLevel(2);
-    if (this.debugKeys.level3.isDown) this.resetForLevel(3);
-    if (this.debugKeys.level4.isDown) this.resetForLevel(4);
-    if (this.debugKeys.level5.isDown) this.resetForLevel(5);
-    if (this.debugKeys.level6.isDown) this.resetForLevel(6);
-    if (this.debugKeys.level7.isDown) this.resetForLevel(7);
-    if (this.debugKeys.level8.isDown) this.resetForLevel(8);
-    if (this.debugKeys.level9.isDown) this.resetForLevel(9);
-    if (this.debugKeys.level10.isDown) this.resetForLevel(10);
+    this.inputHandler.handleDebugCheats(this.debugMode, (l) =>
+      this.resetForLevel(l),
+    );
   }
 
   resetForLevel(level) {
@@ -591,9 +382,7 @@ export default class MainScene extends Phaser.Scene {
       this.score += gained;
 
       if (pu.type === "score") {
-        this.scoreText?.setText(`Score : ${this.score}`);
-
-        this.spawnScorePopup(pu.sprite.x, pu.sprite.y, gained);
+        this.ui.spawnScorePopup(pu.sprite.x, pu.sprite.y, gained);
       }
     }
   }
@@ -622,7 +411,7 @@ export default class MainScene extends Phaser.Scene {
     this.invincible = true;
 
     this.playerPowerLevel = 1;
-    this.shootCooldown = 150;
+    this.shooting.resetCooldown();
     this.playerKills = 0;
 
     this.superTimer = 0;
@@ -663,34 +452,10 @@ export default class MainScene extends Phaser.Scene {
   }
 
   // =====================
-  // SCORE POPUP
-  // =====================
-  spawnScorePopup(x, y, value) {
-    const text = this.add.text(x, y, `+${value}`, {
-      fontSize: "16px",
-      color: "#ffff00",
-      fontStyle: "bold",
-    });
-
-    text.setOrigin(0.5);
-
-    this.tweens.add({
-      targets: text,
-      y: y - 30,
-      alpha: 0,
-      duration: 500,
-      ease: "Power1",
-      onComplete: () => {
-        text.destroy();
-      },
-    });
-  }
-
-  // =====================
   // MID BOSS
   // =====================
   startMidBoss() {
-    this.showLevelBanner("— MID BOSS —");
+    this.ui.showLevelBanner("— MID BOSS —");
 
     this.midBossActive = true;
     this.inMidBoss = true;
@@ -733,7 +498,7 @@ export default class MainScene extends Phaser.Scene {
   // BOSS FINAL
   // =====================
   startBossFinal() {
-    this.showLevelBanner("— FINAL BOSS —");
+    this.ui.showLevelBanner("— FINAL BOSS —");
 
     this.inBossFinal = true;
 

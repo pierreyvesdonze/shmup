@@ -291,7 +291,7 @@ export default class Enemy {
       this.scene.scoreText?.setText(`Score : ${this.scene.score}`);
 
       // 👇 POP UI
-      this.scene.spawnScorePopup(this.sprite.x, this.sprite.y, score);
+      this.scene.ui.spawnScorePopup(this.sprite.x, this.sprite.y, score);
 
       // =====================
       // DROP
