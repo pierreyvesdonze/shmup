@@ -52,7 +52,7 @@ export default class LevelSystem {
 
     return {
       // fréquence de tir ennemie (plus bas = plus de tirs)
-      shootCooldown: Math.max(400, 1400 - level * 120),
+      shootCooldown: Math.max(400, 1400 - level * 140),
 
       // chance de tirer par cycle
       shootChance: Math.min(0.95, 0.25 + level * 0.07),
@@ -78,7 +78,7 @@ export default class LevelSystem {
   levelUp() {
     this.level++;
     this.kills = 0;
-    this.killsToNextLevel = Math.floor(this.killsToNextLevel * 1.25);
+    this.killsToNextLevel = Math.floor(this.killsToNextLevel * 1.15);
     this.updateDifficulty();
 
     this.scene.ui?.showLevelBanner?.(`LEVEL ${this.level}`);
@@ -119,8 +119,9 @@ export default class LevelSystem {
   }
 
   updateDifficulty() {
-    this.difficultyMultiplier = 0.9 + Math.pow(this.level, 1.15) * 0.06;
+    this.difficultyMultiplier =
+      (0.9 + Math.pow(this.level, 1.15) * 0.06) * 0.88;
 
-    this.spawnRateMultiplier = 1 + (this.level - 1) * 0.12;
+    this.spawnRateMultiplier = (1 + (this.level - 1) * 0.12) * 0.88;
   }
 }
