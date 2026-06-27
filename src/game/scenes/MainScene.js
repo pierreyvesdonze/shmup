@@ -480,6 +480,21 @@ export default class MainScene extends Phaser.Scene {
     });
 
     if (this.playerHP <= 0) {
+      this.invincible = true;
+      if (this.playerBlinkEvent) {
+        this.playerBlinkEvent.remove();
+        this.playerBlinkEvent = null;
+      }
+      this.player.sprite.visible = false;
+
+      for (const e of this.enemies) e.destroy();
+      this.enemies = [];
+
+      for (const b of this.enemyBullets) b.destroy();
+      this.enemyBullets = [];
+
+      this.spawner.pause = true;
+
       this.time.delayedCall(200, () => {
         this.gameOver();
       });
@@ -571,6 +586,15 @@ export default class MainScene extends Phaser.Scene {
 
   gameOver() {
     this.player.sprite.visible = false;
+    this.invincible = true;
+
+    // Nettoyage
+    for (const e of this.enemies) e.destroy();
+    this.enemies = [];
+
+    for (const b of this.enemyBullets) b.destroy();
+    this.enemyBullets = [];
+
     this.effects.gameOverScreen(this.score, () => this.scene.restart());
   }
 
