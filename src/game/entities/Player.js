@@ -6,10 +6,10 @@ export default class Player {
 
     this.sprite = this.scene.add.sprite(x, y, "player");
 
-    this.maxSpeed = 10;
+    this.maxSpeed = 9;
 
-    this.acceleration = 2.5;
-    this.friction = 0.75;
+    this.acceleration = 3.2;
+    this.friction = 0.68;
 
     this.velocityX = 0;
     this.velocityY = 0;

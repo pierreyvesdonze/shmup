@@ -418,7 +418,7 @@ export default class MainScene extends Phaser.Scene {
 
     if (r < 0.85) return null;
     if (r < 0.93) return "score";
-    if (r < 0.97) return "heal";
+    if (r < 0.95) return "heal";
     return "power";
   }
 
