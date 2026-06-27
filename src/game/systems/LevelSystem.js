@@ -80,8 +80,6 @@ export default class LevelSystem {
     this.killsToNextLevel = Math.floor(this.killsToNextLevel * 1.15);
     this.updateDifficulty();
 
-    this.scene.ui?.showLevelBanner?.(`LEVEL ${this.level}`);
-
     if (this.level === 5 && this.scene?.startMidBoss) {
       this.scene.startMidBoss();
       return;
@@ -92,6 +90,8 @@ export default class LevelSystem {
       this.scene.startBossFinal();
       return;
     }
+
+    this.scene.ui?.showLevelBanner?.(`LEVEL ${this.level}`);
   }
 
   setLevel(level) {
