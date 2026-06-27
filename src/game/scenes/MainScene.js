@@ -414,13 +414,12 @@ export default class MainScene extends Phaser.Scene {
   }
 
   getDrop() {
-    const r = Math.random();
-
-    if (r < 0.85) return null;
-    if (r < 0.93) return "score";
-    if (r < 0.95) return "heal";
-    return "power";
-  }
+  const r = Math.random();
+  if (r < 0.80) return null;    // moins de null = plus de drops
+  if (r < 0.87) return "score";
+  if (r < 0.98) return "heal";  // grosse plage pour heal
+  return "power";
+}
 
   onEnemyKilled(enemy) {
     this.levelSystem.addKill();

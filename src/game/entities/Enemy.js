@@ -52,7 +52,7 @@ export default class Enemy {
     const level = scene.levelSystem.getLevel();
 
     // 🔻 chance globale de tirs
-    this.fireChance = 0.26
+    this.fireChance = 0.28
 
     // cooldown plus long + scaling propre
     this.shootCooldown = (1400 + Math.random() * 900) / (1 + level * 0.08);

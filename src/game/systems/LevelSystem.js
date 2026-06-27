@@ -14,14 +14,14 @@ export default class LevelSystem {
   getConfig() {
     const level = this.level;
 
-    const l = Math.min(level, 6); // cap à 6 au lieu de 7
+    const l = Math.min(level, 7);
     return {
-      spawnRate: 1 + l * 0.06, // 0.07 → 0.06
-      density: 1 + l * 0.09, // 0.1 → 0.09
-      speed: 1 + l * 0.07, // 0.08 → 0.07
-      chaos: Math.min(0.5, l * 0.06),
-      tankChance: Math.min(0.22, l * 0.035),
-      rushChance: Math.min(0.3, l * 0.045),
+      spawnRate: 1 + l * 0.065,
+      density: 1 + l * 0.095,
+      speed: 1 + l * 0.075,
+      chaos: Math.min(0.55, l * 0.065),
+      tankChance: Math.min(0.23, l * 0.038),
+      rushChance: Math.min(0.32, l * 0.048),
     };
   }
 
