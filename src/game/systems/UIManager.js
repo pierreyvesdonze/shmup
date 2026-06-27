@@ -89,7 +89,8 @@ export default class UIManager {
 
     // VIGNETTE
     this.vignette = scene.add
-      .rectangle(400, 300, 800, 600, 0xff0000, 0)
+      .rectangle(400, 300, 800, 600, 0xff0000)
+      .setAlpha(0)
       .setDepth(10);
 
     // COMBO
@@ -195,24 +196,29 @@ export default class UIManager {
   updateVignette(hp) {
     const danger = hp <= 2;
 
-    if (danger && !this._vignettePulsing) {
+    if (!danger) {
+      if (this._vignettePulsing) {
+        this._vignettePulsing = false;
+        this.scene.tweens.killTweensOf(this.vignette);
+        this.vignette.setAlpha(0);
+      }
+      return;
+    }
+
+    const intensity = hp === 1 ? 0.25 : 0.12;
+
+    if (!this._vignettePulsing || this._vignetteHp !== hp) {
       this._vignettePulsing = true;
-      const intensity = hp === 1 ? 0.25 : 0.12;
+      this._vignetteHp = hp;
       this.scene.tweens.killTweensOf(this.vignette);
       this.scene.tweens.add({
         targets: this.vignette,
-        fillAlpha: intensity,
+        alpha: intensity, // ← alpha au lieu de fillAlpha
         duration: 400,
         yoyo: true,
         repeat: -1,
         ease: "Sine.easeInOut",
       });
-    }
-
-    if (!danger && this._vignettePulsing) {
-      this._vignettePulsing = false;
-      this.scene.tweens.killTweensOf(this.vignette);
-      this.vignette.setAlpha(0);
     }
   }
 
