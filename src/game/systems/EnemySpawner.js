@@ -4,6 +4,8 @@ export default class EnemySpawner {
   constructor(scene) {
     this.scene = scene;
 
+    this.pause = false;
+    
     // timers spawn
     this.spawnTimer = 0;
     this.baseSpawnDelay = 800;
